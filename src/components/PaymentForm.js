@@ -1,131 +1,44 @@
-// import { useState } from 'react';
-// import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-
-
-// export default function PaymentForm() {
-//   const [amount, setAmount] = useState('');
-//   const [loading, setLoading] = useState(false);
-//   const stripe = useStripe();
-//   const elements = useElements();
-
-//   const handlePayment = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-
-//     // Create Payment Intent via API route
-//     const res = await fetch('/api/payment', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ amount }),
-//     });
-//     const { clientSecret } = await res.json();
-
-//     // Confirm payment with Stripe
-//     const result = await stripe.confirmCardPayment(clientSecret, {
-//       payment_method: {
-//         card: elements.getElement(CardElement),
-//       },
-//     });
-
-//     setLoading(false);
-
-//     if (result.error) {
-//       alert(`Payment failed: ${result.error.message}`);
-//     } else {
-//       alert('Payment successful!');
-//       window.location.href = '/success';
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handlePayment} style={styles.form}>
-//       <input
-//         type="number"
-//         placeholder="Enter amount"
-//         value={amount}
-//         onChange={(e) => setAmount(e.target.value)}
-//         required
-//         style={styles.input}
-//       />
-
-//       <label style={styles.label} for="message" class="mb-2 text-sm font-bold text-gray-900 dark:text-white">Your message</label>
-//       <textarea id="message" rows="4" class="flex flex-col justify-start items-start p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Leave a comment..."></textarea>
-//       <CardElement style={styles.card} />
-//       <button type="submit" disabled={!stripe || loading} style={styles.button}>
-//         {loading ? 'Processing...' : 'Pay'}
-//       </button>
-//     </form>
-//   );
-// }
-
-// const styles = {
-//   form: {
-//     display: 'flex',
-//     flexDirection: 'column',
-//     width: '300px',
-//     gap: '12px'
-//   },
-//   label: {
-//     marginBottom: '2px',
-//     text:'large',
-//     color: 'gray-900',
-//     font:'bold'
-//   },
-//   input: {
-//     marginBottom: '20px',
-//     padding: '10px',
-//     fontSize: '1rem',
-//   },
-//   card: {
-//     marginBottom: '20px',
-//     padding: '10px',
-//     border: '1px solid #ddd',
-//   },
-//   button: {
-//     padding: '10px',
-//     backgroundColor: '#0070f3',
-//     color: '#fff',
-//     border: 'none',
-//     borderRadius: '5px',
-//     cursor: 'pointer',
-//   },
-// };
-
 import { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useRouter } from 'next/router';
 
 export default function PaymentForm() {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [name, setName] = useState('');
   const stripe = useStripe();
   const elements = useElements();
+  const router = useRouter();
 
   const handlePayment = async (e) => {
+    
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch('/api/payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount }),
-    });
-    const { clientSecret } = await res.json();
+    // const inputData = [amount, name, message];
+    // console.log(inputData);
+    try{
+      const res = await fetch('/api/save-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, name, message }),
+      });
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-      },
-    });
-
-    setLoading(false);
-
-    if (result.error) {
-      alert(`Payment failed: ${result.error.message}`);
-    } else {
-      alert('Payment successful!');
-      window.location.href = '/success';
+      const data = await res.json();
+      if (res.ok) {
+        console.log('Payment saved:', data);
+        alert('Payment successfully saved!');
+        router.push('/success')
+      } else {
+        console.error('Error:', data.error);
+        alert('Error saving payment: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An unexpected error occurred.');
     }
-  };
+  }
 
   return (
     <form onSubmit={handlePayment} style={styles.form}>
@@ -138,10 +51,23 @@ export default function PaymentForm() {
         style={styles.input}
       />
 
+      <label htmlFor="name" style={styles.label}>Your Name</label>
+      <textarea
+        id="name"
+        type="text"
+        rows="2"
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Let Us know your name..."
+        value={name}
+        style={styles.textarea}
+      ></textarea>
       <label htmlFor="message" style={styles.label}>Your message</label>
       <textarea
         id="message"
         rows="4"
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
         placeholder="Leave a comment..."
         style={styles.textarea}
       ></textarea>

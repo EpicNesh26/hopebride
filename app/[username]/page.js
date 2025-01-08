@@ -2,9 +2,33 @@
 import React from 'react'
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const Username = () => {
   const { username } = useParams();
+  const [supporters, setSupporters] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchSupporters = async () => {
+      try {
+        const res = await fetch('/api/get-supporters');
+        const data = await res.json();
+        setSupporters(data); // Update state with fetched data
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching supporters:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchSupporters();
+
+    // Optional: Set up polling to refresh the list periodically
+    const interval = setInterval(fetchSupporters, 5000); // Fetch every 5 seconds
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, []);
+
   return (
     <>
       {/* 
@@ -33,30 +57,44 @@ const Username = () => {
         </div>
 
         <div className="payment flex gap-3 text-white w-[80%] my-5">
+          {/* <div className="supporters w-1/2 bg-gray-800 bg-opacity-40 p-5">
+            <h2 className="text-lg font-bold my-2">Supporters</h2>
+            {loading ? (
+              <p className="text-gray-400">Loading...</p>
+            ) : (
+              <ul className="text-gray-400">
+                {supporters.map((supporter, index) => (
+                  <li key={index} className="py-2 flex items-center gap-2">
+                    <img className="invert" width={30} height={30} src="/avatar.gif" alt="" />
+                    <span>
+                      {supporter.name} donated <span className="font-bold">${supporter.amount}</span> with a message "{supporter.message}"
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div> */}
           <div className="supporters w-1/2 bg-gray-800 bg-opacity-40 p-5">
-            {/* Show list of all the supporters as a leaderboard*/}
-            <h2 className='text-lg font-bold my-2'>Supporters</h2>
-            <ul className='text-gray-400'>
-              <li className='py-2 flex  items-center gap-2'>
-                <img className='invert' width={30} height={30} src="/avatar.gif" alt="" />
-                [name] donated <span className='font-bold'>$30</span> with a message "I support you."</li>
-              <li className='py-2 flex  items-center gap-2'>
-                <img className='invert' width={30} height={30} src="/avatar.gif" alt="" />
-                [name] donated <span className='font-bold'>$30</span> with a message "I support you."</li>
-              <li className='py-2 flex  items-center gap-2'>
-                <img className='invert' width={30} height={30} src="/avatar.gif" alt="" />
-                [name] donated <span className='font-bold'>$30</span> with a message "I support you."</li>
-              <li className='py-2 flex  items-center gap-2'>
-                <img className='invert' width={30} height={30} src="/avatar.gif" alt="" />
-                [name] donated <span className='font-bold'>$30</span> with a message "I support you."</li>
-              <li className='py-2 flex  items-center gap-2'>
-                <img className='invert' width={30} height={30} src="/avatar.gif" alt="" />
-                [name] donated <span className='font-bold'>$30</span> with a message "I support you."</li>
-
-            </ul>
+            <h2 className="text-lg font-bold my-2">Supporters</h2>
+            {loading ? (
+              <p className="text-gray-400">Loading...</p>
+            ) : supporters.length > 0 ? (
+              <ul className="text-gray-400">
+                {supporters.map((supporter, index) => (
+                  <li key={index} className="py-2 flex items-center gap-2">
+                    <img className="invert" width={30} height={30} src="/avatar.gif" alt="Supporter avatar" />
+                    <span>
+                      {supporter.name} donated <span className="font-bold">${supporter.amount}</span> with a message "{supporter.message}"
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400">There aren't any payments yet.</p>
+            )}
           </div>
           <div className="makepayment flex justify-center gap-3 flex-col items-center w-1/2 bg-gray-800 bg-opacity-40 p-5">
-          <h2 className='text-2xl  font-bold my-2 '>Support Us by making a payment and contributing.</h2>
+            <h2 className='text-2xl  font-bold my-2 '>Support Us by making a payment and contributing.</h2>
             <Link href="/payment" className='flex justify-center items-center'>
               <button className='text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center  mx-auto' style={styles.button}>Make a Payment</button>
             </Link>
@@ -66,6 +104,7 @@ const Username = () => {
     </>
   )
 }
+
 
 const styles = {
   button: {
