@@ -1,57 +1,68 @@
-"use client"
-import React, { useEffect, useState } from 'react'
-import { useSession, signIn, signOut } from "next-auth/react"
-import { useRouter } from 'next/navigation'
-import { fetchuser, updateProfile } from '@/actions/useractions'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Bounce } from 'react-toastify';
-import Router from 'next/router'
+"use client";
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { fetchuser, updateProfile } from "@/actions/useractions";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Bounce } from "react-toastify";
 
 const Dashboard = () => {
-    const { data: session, update } = useSession()
-    const router = useRouter()
-    const [form, setform] = useState({})
+    const { data: session } = useSession();
+    const router = useRouter();
+    const [form, setform] = useState({
+        name: "",
+        email: "",
+        username: "",
+        profilepic: "",
+        coverpic: "",
+        razorpayid: "",
+        razorpaysecret: "",
+    });
 
     useEffect(() => {
-        console.log(session)
-
         if (!session) {
-            router.push('/login')
+            router.push("/login");
+        } else {
+            getData();
         }
-        else {
-            getData()
-        }
-    }, [])
+    }, [session]);
 
-    const getData = async (fetchuser) => {
-        let u = await fetchuser(session.user.name)
-        setform(u)
-    }
+    const getData = async () => {
+        try {
+            const user = await fetchuser(session.user.name);
+            setform(user);
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
+    };
 
     const handleChange = (e) => {
-        setform({ ...form, [e.target.name]: e.target.value })
-    }
+        const updatedForm = { ...form, [e.target.name]: e.target.value };
+        console.log("Updated Form State:", updatedForm);
+        setform(updatedForm);
+    };
 
     const handleSubmit = async (e) => {
-
-        let a = await updateProfile(e, session.user.name)
-        toast('Profile Updated', {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            transition: Bounce,
+        e.preventDefault();
+        try {
+            await updateProfile(session.user.name);
+            toast("Profile Updated", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
             });
-    }
-
-
-
-
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            toast.error("Profile Update Failed");
+        }
+    };
 
     return (
         <>
@@ -119,7 +130,7 @@ const Dashboard = () => {
 
             </div>
         </>
-    )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;

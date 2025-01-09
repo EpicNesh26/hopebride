@@ -1,15 +1,15 @@
 'use client'
 
-// import { loadStripe } from "@stripe/stripe-js";
-// import { Elements } from "@stripe/react-stripe-js";
-// import Username from "./[username]/page";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import Username from "./[username]/page";
 // import convertToSubcurrency from "@/lib/convertToSubcurrency";
 
-// if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY == undefined){
-//   throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined")
-// }
+if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY == undefined){
+  throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined")
+}
 
-// const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 
 export default function Home() {
